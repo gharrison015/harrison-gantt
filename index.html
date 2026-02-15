@@ -669,6 +669,52 @@
     background: #fff;
   }
 
+  /* ---- SYNC BADGE ---- */
+  .sync-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.7);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .sync-badge:hover {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+  }
+  .sync-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #94A3B8;
+    transition: background 0.3s;
+  }
+  .sync-badge.synced .sync-dot { background: #22C55E; }
+  .sync-badge.syncing .sync-dot { background: #F59E0B; animation: pulse 1s infinite; }
+  .sync-badge.error .sync-dot { background: #EF4444; }
+  .sync-badge.offline .sync-dot { background: #94A3B8; }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* ---- PASSIVE TASK STYLES ---- */
+  .gantt-bar.passive-task {
+    background: linear-gradient(135deg, #94A3B8, #CBD5E1) !important;
+    opacity: 0.7;
+  }
+  .gantt-bar.passive-task:hover { opacity: 1; }
+  .gantt-label-row .task-name.passive-label {
+    font-style: italic;
+    opacity: 0.7;
+  }
+
   @media (max-width: 768px) {
     .header { padding: 16px; }
     .header h1 { font-size: 18px; }
@@ -691,10 +737,17 @@
     <h1>Harrison Project <span>&#8212;</span> Construction Timeline</h1>
     <div class="header-subtitle">1,800 sqft Home Addition + Basement Finish</div>
   </div>
-  <div class="view-toggles">
-    <button class="view-btn active" data-view="aggressive" onclick="setView('aggressive')">Aggressive</button>
-    <button class="view-btn" data-view="moderate" onclick="setView('moderate')">Moderate</button>
-    <button class="view-btn" data-view="relaxed" onclick="setView('relaxed')">Relaxed</button>
+
+  <div style="display:flex;align-items:center;gap:16px;">
+    <div class="view-toggles">
+      <button class="view-btn active" data-view="aggressive" onclick="setView('aggressive')">Aggressive</button>
+      <button class="view-btn" data-view="moderate" onclick="setView('moderate')">Moderate</button>
+      <button class="view-btn" data-view="relaxed" onclick="setView('relaxed')">Relaxed</button>
+    </div>
+    <div id="syncBadge" class="sync-badge" title="Live sync with Google Sheet" onclick="fetchTaskData()">
+      <span class="sync-dot"></span>
+      <span id="syncText">Loading...</span>
+    </div>
   </div>
 </div>
 
@@ -726,6 +779,7 @@
 <div class="legend-bar">
   <div class="legend-item"><div class="legend-swatch" style="background:var(--darin-color)"></div> Darin (Contractor)</div>
   <div class="legend-item"><div class="legend-swatch" style="background:var(--greg-color)"></div> Greg (DIY)</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#94A3B8; opacity:0.7"></div> Supply Order (Passive)</div>
   <div class="legend-item"><div class="legend-swatch" style="background:var(--past-christmas)"></div> Can Extend Past Christmas</div>
   <div class="legend-item"><div class="legend-line" style="border-color:var(--christmas-red)"></div> Christmas 2026</div>
   <div class="legend-item"><div class="legend-line" style="border-color:var(--today-green)"></div> Today</div>
@@ -790,6 +844,7 @@ const CATEGORIES = [
 
 const PRIORITY = {
   excavation:1, framing:2, roofing:3, siding:4,
+  window_door_order:2, siding_order:3, hardwood_order:3,
   plumbing_rough:5, electrical_rough:6, hvac:4,
   insulation:7, sheetrock:8,
   painting:9, timber_finish:10, hardwood:11, carpet:15,
@@ -804,7 +859,13 @@ const PRIORITY = {
   bsmt_faucet:18, bsmt_knobs:18, bsmt_backsplash:18,
 };
 
-const TASKS = [
+// Live sync endpoint — fetches task data from Google Sheet via Apps Script
+const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbyRVozLMPO3aPVnTNSbIcc4IJ-hciWutkyBSTmTBTs4pSaQcFIpxtOfoJ4G3eiDSKhl/exec';
+let lastDataHash = '';
+let syncStatus = 'idle'; // 'idle' | 'syncing' | 'synced' | 'error'
+let lastSyncTime = null;
+
+const FALLBACK_TASKS = [
   // ---- EXCAVATION / FOUNDATION ----
   { id:'excavation', name:'Excavation', person:'darin', cat:'excavation', cost:56198,
     deps:[], dur:{a:10,m:14,r:18}, critical:true,
@@ -913,6 +974,9 @@ const TASKS = [
     deps:['bsmt_counter'], dur:{a:2,m:3,r:4}, critical:false, note:'' },
 ];
 
+// Live task data — starts from fallback, updated by fetchTaskData()
+let TASKS = [...FALLBACK_TASKS];
+
 // ============================
 // SCHEDULING ENGINE — Resource-Constrained
 // ============================
@@ -923,7 +987,12 @@ const CHRISTMAS = new Date(2026, 11, 25);
 const TODAY = new Date();
 
 // Tasks that are "passive" — ordering/supply that doesn't block the person
-const PASSIVE_TASKS = new Set(['kitchen_cab_supply', 'tile_supply']);
+// Dynamically built from task data (passive field) on each fetch
+let PASSIVE_TASKS = new Set(['kitchen_cab_supply', 'tile_supply']);
+
+function rebuildPassiveTasks() {
+  PASSIVE_TASKS = new Set(TASKS.filter(t => t.passive).map(t => t.id));
+}
 
 function getDuration(task, view) {
   const key = view === 'aggressive' ? 'a' : view === 'moderate' ? 'm' : 'r';
@@ -1269,10 +1338,12 @@ function renderGantt(scheduled) {
       labelsHTML += `<div class="gantt-category-row" style="background:${item.cat.color}">${item.cat.label}</div>`;
     } else {
       const t = item.task;
-      const color = t.person === 'darin' ? 'var(--darin-color)' : 'var(--greg-color)';
+      const isPassive = PASSIVE_TASKS.has(t.id);
+      const color = isPassive ? '#94A3B8' : (t.person === 'darin' ? 'var(--darin-color)' : 'var(--greg-color)');
+      const passiveClass = isPassive ? ' passive-label' : '';
       labelsHTML += `<div class="gantt-label-row">
         <div class="person-badge" style="background:${color}"></div>
-        <div class="task-name" title="${t.name}">${t.name}</div>
+        <div class="task-name${passiveClass}" title="${t.name}">${t.name}</div>
       </div>`;
     }
   });
@@ -1332,7 +1403,8 @@ function renderGantt(scheduled) {
       const barLeft = dayToX(s.start, range, chartWidth);
       const barRight = dayToX(s.end, range, chartWidth);
       const barWidth = Math.max(4, barRight - barLeft);
-      const barClass = t.pastChristmas ? 'past-christmas' : t.person;
+      const isPassive = PASSIVE_TASKS.has(t.id);
+      const barClass = isPassive ? 'passive-task' : (t.pastChristmas ? 'past-christmas' : t.person);
       const critBadge = t.critical ? ' CP' : '';
 
       bodyHTML += `<div class="gantt-row" data-task-id="${t.id}">
@@ -1445,10 +1517,11 @@ function renderTable(scheduled) {
 
       const critBadge = t.critical ? '<span class="critical-badge">CRITICAL PATH</span>' : '';
       const pastBadge = t.pastChristmas ? '<span class="past-xmas-badge">PAST XMAS OK</span>' : '';
+      const passiveBadge = PASSIVE_TASKS.has(t.id) ? '<span class="past-xmas-badge" style="background:#F1F5F9;color:#64748B">SUPPLY ORDER</span>' : '';
 
       html += `<tr>
         <td>${taskNum}</td>
-        <td><strong>${t.name}</strong> ${critBadge}${pastBadge}</td>
+        <td><strong>${t.name}</strong> ${critBadge}${pastBadge}${passiveBadge}</td>
         <td><span class="person-pill ${t.person}">${t.person === 'darin' ? 'Darin' : 'Greg'}</span></td>
         <td style="font-size:11px; color:#64748B">${cat.label}</td>
         <td>${durLabel}</td>
@@ -1563,15 +1636,97 @@ function refreshAll() {
 }
 
 // ============================
+// LIVE SYNC — Fetch from Google Sheet
+// ============================
+function updateSyncBadge(status, message) {
+  const badge = document.getElementById('syncBadge');
+  const text = document.getElementById('syncText');
+  badge.className = 'sync-badge ' + status;
+  text.textContent = message;
+}
+
+async function fetchTaskData() {
+  try {
+    updateSyncBadge('syncing', 'Syncing...');
+
+    const response = await fetch(SHEET_API_URL);
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+
+    const data = await response.json();
+
+    // Skip re-render if data hasn't changed
+    if (data.hash && data.hash === lastDataHash) {
+      const now = new Date();
+      updateSyncBadge('synced', 'Synced ' + now.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}));
+      return;
+    }
+
+    lastDataHash = data.hash || '';
+    lastSyncTime = new Date();
+
+    // Update TASKS array from sheet data
+    if (data.tasks && data.tasks.length > 0) {
+      // Preserve critical/note/pastChristmas from fallback data if not in sheet data
+      const fallbackMap = {};
+      FALLBACK_TASKS.forEach(t => fallbackMap[t.id] = t);
+      data.tasks.forEach(t => {
+        const fb = fallbackMap[t.id];
+        if (fb) {
+          if (t.critical === undefined) t.critical = fb.critical || false;
+          if (!t.note && fb.note) t.note = fb.note;
+        }
+      });
+      TASKS = data.tasks;
+      rebuildPassiveTasks();
+    }
+
+    // Update start date from sheet if provided
+    if (data.startDate) {
+      const parts = data.startDate.split('-');
+      const sheetStart = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+      if (sheetStart.getTime() !== projectStartDate.getTime()) {
+        projectStartDate = sheetStart;
+        document.getElementById('startDatePicker').value = data.startDate;
+      }
+    }
+
+    // Re-render everything
+    refreshAll();
+    renderCostSummary();
+
+    updateSyncBadge('synced', 'Synced ' + lastSyncTime.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}));
+  } catch (err) {
+    console.warn('Sheet sync failed:', err);
+    updateSyncBadge('error', 'Sync failed — click to retry');
+    // On first load failure, use fallback data
+    if (TASKS.length === 0) {
+      TASKS = [...FALLBACK_TASKS];
+      rebuildPassiveTasks();
+      refreshAll();
+      renderCostSummary();
+    }
+  }
+}
+
+// ============================
 // INIT
 // ============================
 document.getElementById('genDate').textContent = formatDate(new Date());
+
+// Initial render with fallback data, then fetch live data
+rebuildPassiveTasks();
 renderCostSummary();
 currentView = 'moderate';
 document.querySelectorAll('.view-btn').forEach(b => {
   b.classList.toggle('active', b.dataset.view === 'moderate');
 });
 refreshAll();
+
+// Fetch live data from Google Sheet
+fetchTaskData();
+
+// Auto-refresh every 60 seconds
+setInterval(fetchTaskData, 60000);
 
 </script>
 </body>
