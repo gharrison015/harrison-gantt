@@ -1,0 +1,1578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Harrison Project — Construction Timeline</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --darin-color: #3B82F6;
+    --darin-light: #93C5FD;
+    --greg-color: #F59E0B;
+    --greg-light: #FCD34D;
+    --bg-dark: #1E293B;
+    --bg-sidebar: #0F172A;
+    --bg-chart: #F8FAFC;
+    --text-dark: #1E293B;
+    --text-light: #F1F5F9;
+    --border: #E2E8F0;
+    --critical: #EF4444;
+    --today-green: #22C55E;
+    --christmas-red: #DC2626;
+    --past-christmas: #A855F7;
+    --category-excavation: #78716C;
+    --category-framing: #B45309;
+    --category-dryin: #0369A1;
+    --category-mechanicals: #7C3AED;
+    --category-interior: #059669;
+    --category-kitchen: #E11D48;
+    --category-basement: #6366F1;
+    --category-masterbath: #DB2777;
+    --transition-speed: 0.6s;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: #F1F5F9;
+    color: var(--text-dark);
+    line-height: 1.5;
+  }
+
+  /* ---- HEADER ---- */
+  .header {
+    background: linear-gradient(135deg, var(--bg-sidebar) 0%, var(--bg-dark) 100%);
+    color: var(--text-light);
+    padding: 24px 32px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  .header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .header h1 span { color: var(--greg-color); }
+  .header-subtitle {
+    font-size: 13px;
+    opacity: 0.6;
+    margin-top: 2px;
+  }
+
+  .view-toggles {
+    display: flex;
+    gap: 4px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 4px;
+  }
+  .view-btn {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.6);
+    background: transparent;
+    transition: all 0.3s;
+  }
+  .view-btn:hover { color: #fff; background: rgba(255,255,255,0.1); }
+  .view-btn.active {
+    background: var(--darin-color);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.4);
+  }
+  .view-btn.active[data-view="aggressive"] { background: #EF4444; box-shadow: 0 2px 8px rgba(239,68,68,0.4); }
+  .view-btn.active[data-view="moderate"] { background: #F59E0B; box-shadow: 0 2px 8px rgba(245,158,11,0.4); }
+  .view-btn.active[data-view="relaxed"] { background: #22C55E; box-shadow: 0 2px 8px rgba(34,197,94,0.4); }
+
+  /* ---- START DATE PICKER ---- */
+  .start-date-section {
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    padding: 16px 32px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 24px;
+  }
+  .date-picker-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .date-picker-group label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .date-picker-group input[type="date"] {
+    padding: 8px 14px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-dark);
+    background: var(--bg-chart);
+    cursor: pointer;
+    transition: border-color 0.2s;
+    font-family: inherit;
+  }
+  .date-picker-group input[type="date"]:hover {
+    border-color: var(--darin-color);
+  }
+  .date-picker-group input[type="date"]:focus {
+    outline: none;
+    border-color: var(--darin-color);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+  }
+
+  /* ---- PROJECTED FINISH DISPLAY ---- */
+  .projected-finish-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    border: 2px solid;
+    transition: all 0.3s;
+  }
+  .projected-finish-display.on-time {
+    background: #F0FDF4;
+    border-color: #BBF7D0;
+    color: #166534;
+  }
+  .projected-finish-display.over-time {
+    background: #FEF2F2;
+    border-color: #FECACA;
+    color: #991B1B;
+  }
+  .projected-finish-display .finish-icon {
+    font-size: 18px;
+  }
+
+  /* ---- LATEST START CALCULATOR ---- */
+  .latest-start-section {
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    padding: 16px 32px;
+  }
+  .latest-start-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .latest-start-title .title-icon {
+    font-size: 16px;
+  }
+  .latest-start-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+  }
+  .latest-start-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border-radius: 10px;
+    border: 2px solid var(--border);
+    background: var(--bg-chart);
+    transition: all 0.3s;
+  }
+  .latest-start-card.feasible {
+    border-color: #BBF7D0;
+    background: #F0FDF4;
+  }
+  .latest-start-card.infeasible {
+    border-color: #FECACA;
+    background: #FEF2F2;
+  }
+  .latest-start-card .ls-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .latest-start-card.feasible .ls-indicator { background: #22C55E; }
+  .latest-start-card.infeasible .ls-indicator { background: #EF4444; }
+  .latest-start-card .ls-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #64748B;
+  }
+  .latest-start-card .ls-date {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-dark);
+  }
+  .latest-start-card.infeasible .ls-date { color: #DC2626; }
+  .latest-start-card .ls-note {
+    font-size: 11px;
+    color: #64748B;
+    margin-top: 1px;
+  }
+  .latest-start-card.infeasible .ls-note { color: #B91C1C; }
+  .latest-start-card .ls-view-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .latest-start-card .ls-view-badge.aggressive { background: #EF4444; }
+  .latest-start-card .ls-view-badge.moderate { background: #F59E0B; }
+  .latest-start-card .ls-view-badge.relaxed { background: #22C55E; }
+
+  /* ---- STATS PANEL ---- */
+  .stats-panel {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    padding: 20px 32px;
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+  }
+  .stat-card {
+    background: var(--bg-chart);
+    border-radius: 10px;
+    padding: 16px;
+    border: 1px solid var(--border);
+  }
+  .stat-card .stat-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #64748B;
+    font-weight: 600;
+  }
+  .stat-card .stat-value {
+    font-size: 26px;
+    font-weight: 700;
+    margin-top: 4px;
+    transition: all 0.4s;
+  }
+  .stat-card .stat-detail {
+    font-size: 12px;
+    color: #94A3B8;
+    margin-top: 2px;
+  }
+  .stat-value.darin-stat { color: var(--darin-color); }
+  .stat-value.greg-stat { color: var(--greg-color); }
+  .stat-value.buffer-positive { color: var(--today-green); }
+  .stat-value.buffer-negative { color: var(--critical); }
+  .stat-value.total-cost { color: var(--text-dark); }
+
+  /* ---- LEGEND ---- */
+  .legend-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 12px 32px;
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    align-items: center;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .legend-swatch {
+    width: 16px;
+    height: 12px;
+    border-radius: 3px;
+  }
+  .legend-line {
+    width: 24px;
+    height: 0;
+    border-top: 2px dashed;
+  }
+
+  /* ---- GANTT CONTAINER ---- */
+  .gantt-wrapper {
+    padding: 20px 32px;
+    overflow-x: auto;
+  }
+  .gantt-container {
+    position: relative;
+    min-width: 1200px;
+    display: flex;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border: 1px solid var(--border);
+  }
+
+  /* Left label column */
+  .gantt-labels {
+    flex: 0 0 280px;
+    min-width: 280px;
+    border-right: 2px solid var(--border);
+    background: #FAFBFC;
+    border-radius: 12px 0 0 12px;
+    z-index: 10;
+    position: sticky;
+    left: 0;
+    box-shadow: 4px 0 8px rgba(0,0,0,0.06);
+  }
+  .gantt-label-header {
+    height: 48px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #64748B;
+    border-bottom: 2px solid var(--border);
+    background: #F1F5F9;
+    border-radius: 12px 0 0 0;
+  }
+  .gantt-label-row {
+    height: 34px;
+    display: flex;
+    align-items: center;
+    padding: 0 8px 0 16px;
+    font-size: 12px;
+    border-bottom: 1px solid #F1F5F9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: default;
+  }
+  .gantt-label-row:hover { background: #F1F5F9; }
+  .gantt-label-row .person-badge {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .gantt-label-row .task-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .gantt-category-row {
+    height: 28px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border);
+    color: #fff;
+  }
+
+  /* Right chart area */
+  .gantt-chart {
+    position: relative;
+    overflow: visible;
+    flex-shrink: 0;
+  }
+  .gantt-chart-header {
+    height: 48px;
+    display: flex;
+    border-bottom: 2px solid var(--border);
+    background: #F1F5F9;
+    position: relative;
+  }
+  .gantt-month {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    border-right: 1px solid var(--border);
+  }
+  .gantt-chart-body {
+    position: relative;
+  }
+  .gantt-row {
+    height: 34px;
+    position: relative;
+    border-bottom: 1px solid #F8FAFC;
+  }
+  .gantt-row:hover { background: rgba(59,130,246,0.03); }
+  .gantt-category-spacer {
+    height: 28px;
+    border-bottom: 1px solid var(--border);
+    background: #F8FAFC;
+  }
+
+  /* Grid lines */
+  .gantt-gridline {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: #F1F5F9;
+    z-index: 1;
+  }
+  .gantt-gridline.month-line { background: #E2E8F0; }
+
+  /* Bars */
+  .gantt-bar {
+    position: absolute;
+    height: 22px;
+    top: 6px;
+    border-radius: 4px;
+    z-index: 5;
+    cursor: pointer;
+    transition: left var(--transition-speed) ease, width var(--transition-speed) ease, opacity 0.3s;
+    min-width: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  }
+  .gantt-bar:hover {
+    filter: brightness(1.1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    transform: scaleY(1.15);
+    z-index: 20;
+  }
+  .gantt-bar.darin { background: linear-gradient(135deg, var(--darin-color), #60A5FA); }
+  .gantt-bar.greg { background: linear-gradient(135deg, var(--greg-color), #FBBF24); }
+  .gantt-bar.past-christmas { background: linear-gradient(135deg, var(--past-christmas), #C084FC); }
+  .gantt-bar .bar-label {
+    font-size: 10px;
+    color: #fff;
+    font-weight: 600;
+    padding: 0 6px;
+    line-height: 22px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  }
+
+  /* Milestone lines */
+  .milestone-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    z-index: 8;
+    pointer-events: none;
+  }
+  .milestone-line.christmas {
+    border-left: 2px dashed var(--christmas-red);
+    background: none;
+  }
+  .milestone-line.today {
+    border-left: 2px dashed var(--today-green);
+    background: none;
+  }
+  .milestone-label {
+    position: absolute;
+    top: -44px;
+    transform: translateX(-50%);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    z-index: 9;
+  }
+  .milestone-label.christmas { background: var(--christmas-red); color: #fff; }
+  .milestone-label.today { background: var(--today-green); color: #fff; }
+
+  /* Dependency arrows */
+  .dep-arrow {
+    position: absolute;
+    z-index: 4;
+    pointer-events: none;
+  }
+  .dep-arrow line, .dep-arrow polyline {
+    stroke: #CBD5E1;
+    stroke-width: 1.5;
+    fill: none;
+  }
+  .dep-arrow polygon { fill: #CBD5E1; }
+
+  /* Tooltip */
+  .gantt-tooltip {
+    position: fixed;
+    display: none;
+    background: var(--bg-dark);
+    color: var(--text-light);
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    max-width: 320px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    z-index: 1000;
+    pointer-events: none;
+  }
+  .gantt-tooltip .tt-title {
+    font-weight: 700;
+    font-size: 13px;
+    margin-bottom: 6px;
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+    padding-bottom: 6px;
+  }
+  .gantt-tooltip .tt-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 3px;
+  }
+  .gantt-tooltip .tt-label { color: #94A3B8; }
+  .gantt-tooltip .tt-value { font-weight: 600; }
+  .gantt-tooltip .tt-value.darin { color: var(--darin-light); }
+  .gantt-tooltip .tt-value.greg { color: var(--greg-light); }
+
+  /* ---- TASK TABLE ---- */
+  .table-section {
+    padding: 20px 32px 40px;
+  }
+  .table-section h2 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--text-dark);
+  }
+  .task-table-wrap {
+    overflow-x: auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border: 1px solid var(--border);
+  }
+  .task-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .task-table thead th {
+    background: #F1F5F9;
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #64748B;
+    border-bottom: 2px solid var(--border);
+    position: sticky;
+    top: 0;
+  }
+  .task-table tbody td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #F1F5F9;
+    vertical-align: middle;
+  }
+  .task-table tbody tr:hover { background: #F8FAFC; }
+  .task-table .cat-row td {
+    background: #F1F5F9;
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #64748B;
+    padding: 6px 12px;
+  }
+  .task-table .person-pill {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 11px;
+    color: #fff;
+  }
+  .task-table .person-pill.darin { background: var(--darin-color); }
+  .task-table .person-pill.greg { background: var(--greg-color); }
+  .task-table .cost-cell { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .task-table .critical-badge {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: #FEF2F2;
+    color: var(--critical);
+    font-size: 10px;
+    font-weight: 700;
+    margin-left: 4px;
+  }
+  .past-xmas-badge {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: #F5F3FF;
+    color: var(--past-christmas);
+    font-size: 10px;
+    font-weight: 700;
+    margin-left: 4px;
+  }
+
+  /* Cost summary */
+  .cost-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    padding: 0 32px 32px;
+  }
+  .cost-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 16px;
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .cost-card .cost-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #64748B;
+    font-weight: 600;
+  }
+  .cost-card .cost-value {
+    font-size: 24px;
+    font-weight: 700;
+    margin-top: 4px;
+  }
+  .cost-card .cost-value.darin-cost { color: var(--darin-color); }
+  .cost-card .cost-value.greg-cost { color: var(--greg-color); }
+  .cost-card .cost-value.total-cost-val { color: var(--text-dark); }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 12px;
+    color: #94A3B8;
+    border-top: 1px solid var(--border);
+    background: #fff;
+  }
+
+  @media (max-width: 768px) {
+    .header { padding: 16px; }
+    .header h1 { font-size: 18px; }
+    .gantt-wrapper { padding: 12px 16px; }
+    .gantt-labels { flex: 0 0 180px; min-width: 180px; }
+    .stats-panel { padding: 12px 16px; }
+    .table-section { padding: 12px 16px; }
+    .legend-bar { padding: 8px 16px; }
+    .cost-summary { padding: 0 16px 20px; }
+    .start-date-section { padding: 12px 16px; flex-direction: column; align-items: flex-start; }
+    .latest-start-section { padding: 12px 16px; }
+    .latest-start-cards { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>Harrison Project <span>&#8212;</span> Construction Timeline</h1>
+    <div class="header-subtitle">1,800 sqft Home Addition + Basement Finish</div>
+  </div>
+  <div class="view-toggles">
+    <button class="view-btn active" data-view="aggressive" onclick="setView('aggressive')">Aggressive</button>
+    <button class="view-btn" data-view="moderate" onclick="setView('moderate')">Moderate</button>
+    <button class="view-btn" data-view="relaxed" onclick="setView('relaxed')">Relaxed</button>
+  </div>
+</div>
+
+<!-- START DATE PICKER + PROJECTED FINISH -->
+<div class="start-date-section">
+  <div class="date-picker-group">
+    <label for="startDatePicker">Project Start Date</label>
+    <input type="date" id="startDatePicker" value="2026-03-01" onchange="onStartDateChange(this.value)">
+  </div>
+  <div id="projectedFinishDisplay" class="projected-finish-display on-time">
+    <span class="finish-icon"></span>
+    <span id="projectedFinishText">Calculating...</span>
+  </div>
+</div>
+
+<!-- LATEST START FOR CHRISTMAS CALCULATOR -->
+<div class="latest-start-section">
+  <div class="latest-start-title">
+    <span class="title-icon">&#127876;</span>
+    Latest Start Dates to Finish by Christmas 2026 (Dec 25)
+  </div>
+  <div class="latest-start-cards" id="latestStartCards">
+    <!-- Filled dynamically -->
+  </div>
+</div>
+
+<div class="stats-panel" id="statsPanel"></div>
+
+<div class="legend-bar">
+  <div class="legend-item"><div class="legend-swatch" style="background:var(--darin-color)"></div> Darin (Contractor)</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:var(--greg-color)"></div> Greg (DIY)</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:var(--past-christmas)"></div> Can Extend Past Christmas</div>
+  <div class="legend-item"><div class="legend-line" style="border-color:var(--christmas-red)"></div> Christmas 2026</div>
+  <div class="legend-item"><div class="legend-line" style="border-color:var(--today-green)"></div> Today</div>
+</div>
+
+<div class="gantt-wrapper">
+  <div class="gantt-container" id="ganttContainer">
+    <div class="gantt-labels" id="ganttLabels"></div>
+    <div class="gantt-chart" id="ganttChart">
+      <div class="gantt-chart-header" id="ganttHeader"></div>
+      <div class="gantt-chart-body" id="ganttBody"></div>
+    </div>
+  </div>
+</div>
+
+<div class="gantt-tooltip" id="tooltip"></div>
+
+<div class="cost-summary" id="costSummary"></div>
+
+<div class="table-section">
+  <h2>Complete Task List</h2>
+  <div class="task-table-wrap">
+    <table class="task-table" id="taskTable">
+      <thead>
+        <tr>
+          <th style="width:30px">#</th>
+          <th>Task</th>
+          <th>Assigned</th>
+          <th>Category</th>
+          <th>Duration</th>
+          <th>Start Date</th>
+          <th>End Date</th>
+          <th>Dependencies</th>
+          <th style="text-align:right">Cost</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody id="taskTableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="footer">
+  Harrison Project &mdash; Construction Timeline &mdash; Generated <span id="genDate"></span>
+</div>
+
+<script>
+// ============================
+// DATA MODEL
+// ============================
+
+const CATEGORIES = [
+  { id: 'excavation', label: 'Excavation / Foundation', color: '#78716C' },
+  { id: 'framing', label: 'Framing', color: '#B45309' },
+  { id: 'dryin', label: 'Dry-In (Roof, Siding, Windows)', color: '#0369A1' },
+  { id: 'mechanicals', label: 'Mechanicals (MEP)', color: '#7C3AED' },
+  { id: 'interior', label: 'Interior Finishes — Main', color: '#059669' },
+  { id: 'kitchen', label: 'Interior Finishes — Kitchen', color: '#E11D48' },
+  { id: 'masterbath', label: 'Master Bath (Can Extend Past Xmas)', color: '#DB2777' },
+  { id: 'basement', label: 'Basement', color: '#6366F1' },
+];
+
+const PRIORITY = {
+  excavation:1, framing:2, roofing:3, siding:4,
+  plumbing_rough:5, electrical_rough:6, hvac:4,
+  insulation:7, sheetrock:8,
+  painting:9, timber_finish:10, hardwood:11, carpet:15,
+  int_trim:12, int_doors:13, trim_door_install:14, door_hardware:16,
+  bath_hooks:17,
+  kitchen_cab_supply:3, kitchen_cab_install:12, countertop:13,
+  kitchen_sink:17, garbage_disposal:17, range_hood:17, cab_hardware:17,
+  tile_schluter:18, tile_supply:18, tile_install:19,
+  bsmt_rough:5, bsmt_insulation:8, bsmt_sheetrock:9, bsmt_trim_door:12,
+  bsmt_painting:13, bsmt_flooring:14, bsmt_tile:10, bsmt_glass:11, bsmt_vanity:11,
+  bsmt_kitchen_cab:15, bsmt_cab_install:16, bsmt_counter:17,
+  bsmt_faucet:18, bsmt_knobs:18, bsmt_backsplash:18,
+};
+
+const TASKS = [
+  // ---- EXCAVATION / FOUNDATION ----
+  { id:'excavation', name:'Excavation', person:'darin', cat:'excavation', cost:56198,
+    deps:[], dur:{a:10,m:14,r:18}, critical:true,
+    note:'Excavation, Weaver Precast walls, flat work, steel I-beam' },
+
+  // ---- FRAMING ----
+  { id:'framing', name:'Rough Framing', person:'darin', cat:'framing', cost:68455,
+    deps:['excavation'], dur:{a:21,m:28,r:35}, critical:true,
+    note:'Lumber, trusses, framing labor, Douglas Fir timber frame porch' },
+
+  // ---- DRY-IN ----
+  { id:'roofing', name:'Roofing', person:'darin', cat:'dryin', cost:8400,
+    deps:['framing'], dur:{a:5,m:7,r:10}, critical:true, note:'' },
+  { id:'siding', name:'Siding / Windows / Doors', person:'darin', cat:'dryin', cost:77553,
+    deps:['roofing'], dur:{a:18,m:24,r:30}, critical:true,
+    note:'Diamond Kote siding, door & window package' },
+
+  // ---- MECHANICALS ----
+  { id:'plumbing_rough', name:'Plumbing Rough-in', person:'greg', cat:'mechanicals', cost:21500,
+    deps:['framing'], dur:{a:8,m:12,r:16}, critical:true, note:'Main addition' },
+  { id:'electrical_rough', name:'Electrical Rough-in', person:'greg', cat:'mechanicals', cost:14706,
+    deps:['framing'], dur:{a:8,m:12,r:16}, critical:true, note:'Main addition' },
+  { id:'hvac', name:'HVAC', person:'darin', cat:'mechanicals', cost:15500,
+    deps:['framing'], dur:{a:7,m:10,r:14}, critical:false, note:'' },
+
+  // ---- INSULATION / SHEETROCK ----
+  { id:'insulation', name:'Insulation', person:'darin', cat:'mechanicals', cost:16500,
+    deps:['plumbing_rough','electrical_rough','hvac','siding'], dur:{a:5,m:7,r:10}, critical:true, note:'After mechanical inspection' },
+  { id:'sheetrock', name:'Sheetrock', person:'darin', cat:'interior', cost:16320,
+    deps:['insulation'], dur:{a:14,m:18,r:24}, critical:true, note:'' },
+
+  // ---- INTERIOR FINISHES - MAIN ----
+  { id:'painting', name:'Painting (Home Addition)', person:'greg', cat:'interior', cost:14500,
+    deps:['sheetrock'], dur:{a:14,m:18,r:24}, critical:true, note:'DIY — walls and ceilings' },
+  { id:'timber_finish', name:'Finishing for Timber Frame', person:'greg', cat:'interior', cost:3120,
+    deps:['sheetrock'], dur:{a:4,m:6,r:8}, critical:false, note:'Sand, stain, seal timber frame' },
+  { id:'hardwood', name:'Hardwood Supply & Install', person:'greg', cat:'interior', cost:31900,
+    deps:['painting'], dur:{a:14,m:21,r:28}, critical:true, note:'Throughout first floor — 1800 sqft, DIY' },
+  { id:'carpet', name:'Carpet Supply & Install (Master Suite)', person:'greg', cat:'interior', cost:8200,
+    deps:['hardwood'], dur:{a:2,m:3,r:4}, critical:false, note:'Professional install — Greg coordinates' },
+  { id:'int_trim', name:'Interior Trim Package Install', person:'greg', cat:'interior', cost:9700,
+    deps:['painting'], dur:{a:14,m:21,r:28}, critical:false, note:'DIY' },
+  { id:'int_doors', name:'Interior Door Package Install', person:'greg', cat:'interior', cost:7500,
+    deps:['painting'], dur:{a:7,m:10,r:14}, critical:false, note:'DIY' },
+  { id:'trim_door_install', name:'Trim and Door Install', person:'greg', cat:'interior', cost:8300,
+    deps:['int_trim','int_doors'], dur:{a:10,m:14,r:21}, critical:false, note:'Final trim and door work' },
+  { id:'door_hardware', name:'Door Knobs, Locksets, Door Stops', person:'greg', cat:'interior', cost:1200,
+    deps:['trim_door_install'], dur:{a:2,m:2,r:3}, critical:false, note:'' },
+  { id:'bath_hooks', name:'Install Bathroom Hooks', person:'greg', cat:'interior', cost:350,
+    deps:['sheetrock'], dur:{a:1,m:1,r:2}, critical:false, note:'Customer supplied' },
+
+  // ---- KITCHEN ----
+  { id:'kitchen_cab_supply', name:'Semi-Custom Kitchen Cabinetry (Supply)', person:'darin', cat:'kitchen', cost:19000,
+    deps:['framing'], dur:{a:42,m:56,r:70}, critical:false, note:'Order placed at framing — lead time for fabrication & delivery' },
+  { id:'kitchen_cab_install', name:'Kitchen Cabinetry Installation', person:'greg', cat:'kitchen', cost:6500,
+    deps:['hardwood','kitchen_cab_supply'], dur:{a:7,m:10,r:14}, critical:true, note:'Floors first, then cabinets' },
+  { id:'countertop', name:'Stone Countertop & Backsplash', person:'darin', cat:'kitchen', cost:17700,
+    deps:['kitchen_cab_install'], dur:{a:5,m:7,r:10}, critical:true, note:'Template + fabricate + install' },
+  { id:'kitchen_sink', name:'Kitchen Sink Install', person:'greg', cat:'kitchen', cost:600,
+    deps:['countertop'], dur:{a:1,m:1,r:2}, critical:false, note:'' },
+  { id:'garbage_disposal', name:'Garbage Disposal', person:'greg', cat:'kitchen', cost:360,
+    deps:['countertop'], dur:{a:1,m:1,r:1}, critical:false, note:'' },
+  { id:'range_hood', name:'Range Hood Ducting & Install', person:'greg', cat:'kitchen', cost:1200,
+    deps:['countertop'], dur:{a:1,m:2,r:2}, critical:false, note:'' },
+  { id:'cab_hardware', name:'Cabinet Knobs & Drawer Pulls', person:'greg', cat:'kitchen', cost:850,
+    deps:['kitchen_cab_install'], dur:{a:1,m:1,r:2}, critical:false, note:'' },
+
+  // ---- MASTER BATH ----
+  { id:'tile_schluter', name:'Tile — Schluter Waterproofing', person:'greg', cat:'masterbath', cost:4899,
+    deps:['sheetrock'], dur:{a:5,m:7,r:10}, critical:false, pastChristmas:true, note:'Master bath waterproofing system' },
+  { id:'tile_supply', name:'Tile — Master Bathroom (Supply)', person:'greg', cat:'masterbath', cost:6900,
+    deps:['sheetrock'], dur:{a:1,m:1,r:1}, critical:false, pastChristmas:true, note:'Material order — placed early' },
+  { id:'tile_install', name:'Tile Install — Master Bathroom', person:'greg', cat:'masterbath', cost:13800,
+    deps:['tile_schluter','tile_supply'], dur:{a:21,m:35,r:42}, critical:false, pastChristmas:true, note:'DIY — shower, floor, walls. Can extend past Christmas.' },
+
+  // ---- BASEMENT ----
+  { id:'bsmt_rough', name:'Basement — Framing, Electrical, Plumbing Rough-in', person:'darin', cat:'basement', cost:12050,
+    deps:['framing'], dur:{a:10,m:14,r:18}, critical:false, note:'Can run in parallel with main addition' },
+  { id:'bsmt_insulation', name:'Basement — Rock Wool Insulation (Ceiling)', person:'darin', cat:'basement', cost:3200,
+    deps:['bsmt_rough'], dur:{a:3,m:4,r:5}, critical:false, note:'' },
+  { id:'bsmt_sheetrock', name:'Basement — Sheetrock Walls & Ceiling', person:'darin', cat:'basement', cost:4680,
+    deps:['bsmt_insulation'], dur:{a:7,m:10,r:14}, critical:false, note:'' },
+  { id:'bsmt_trim_door', name:'Basement — Trim & Door Supply & Install', person:'darin', cat:'basement', cost:4750,
+    deps:['bsmt_sheetrock'], dur:{a:5,m:7,r:10}, critical:false, note:'' },
+  { id:'bsmt_painting', name:'Basement — Painting', person:'greg', cat:'basement', cost:6400,
+    deps:['bsmt_sheetrock'], dur:{a:7,m:10,r:14}, critical:false, note:'DIY' },
+  { id:'bsmt_flooring', name:'Basement — Flooring Supply & Install', person:'greg', cat:'basement', cost:16000,
+    deps:['bsmt_painting'], dur:{a:7,m:10,r:14}, critical:false, note:'DIY' },
+  { id:'bsmt_tile', name:'Basement — Tile Shower Install', person:'darin', cat:'basement', cost:5200,
+    deps:['bsmt_sheetrock'], dur:{a:5,m:7,r:10}, critical:false, note:'' },
+  { id:'bsmt_glass', name:'Basement — Tile Shower Glass', person:'darin', cat:'basement', cost:2000,
+    deps:['bsmt_tile'], dur:{a:3,m:5,r:7}, critical:false, note:'' },
+  { id:'bsmt_vanity', name:'Basement — Vanity Supply & Install', person:'darin', cat:'basement', cost:1200,
+    deps:['bsmt_tile'], dur:{a:2,m:3,r:4}, critical:false, note:'' },
+  { id:'bsmt_kitchen_cab', name:'Basement — Kitchenette Cabinetry', person:'greg', cat:'basement', cost:4200,
+    deps:['bsmt_flooring'], dur:{a:3,m:5,r:7}, critical:false, note:'' },
+  { id:'bsmt_cab_install', name:'Basement — Cabinetry Install', person:'greg', cat:'basement', cost:2200,
+    deps:['bsmt_kitchen_cab'], dur:{a:3,m:4,r:6}, critical:false, note:'' },
+  { id:'bsmt_counter', name:'Basement — Countertop', person:'greg', cat:'basement', cost:2100,
+    deps:['bsmt_cab_install'], dur:{a:2,m:3,r:5}, critical:false, note:'' },
+  { id:'bsmt_faucet', name:'Basement — Faucet Supply & Install', person:'greg', cat:'basement', cost:600,
+    deps:['bsmt_counter'], dur:{a:1,m:1,r:2}, critical:false, note:'' },
+  { id:'bsmt_knobs', name:'Basement — Knobs & Pulls', person:'greg', cat:'basement', cost:455,
+    deps:['bsmt_cab_install'], dur:{a:1,m:1,r:1}, critical:false, note:'' },
+  { id:'bsmt_backsplash', name:'Basement — Backsplash Install', person:'greg', cat:'basement', cost:600,
+    deps:['bsmt_counter'], dur:{a:2,m:3,r:4}, critical:false, note:'' },
+];
+
+// ============================
+// SCHEDULING ENGINE — Resource-Constrained
+// ============================
+// Dynamic project start date — can be changed by the date picker
+let projectStartDate = new Date(2026, 2, 1); // March 1, 2026
+
+const CHRISTMAS = new Date(2026, 11, 25);
+const TODAY = new Date();
+
+// Tasks that are "passive" — ordering/supply that doesn't block the person
+const PASSIVE_TASKS = new Set(['kitchen_cab_supply', 'tile_supply']);
+
+function getDuration(task, view) {
+  const key = view === 'aggressive' ? 'a' : view === 'moderate' ? 'm' : 'r';
+  return task.dur[key];
+}
+
+function scheduleAllTasks(view, startDate) {
+  const useStart = startDate || projectStartDate;
+  const scheduled = {};
+  const taskMap = {};
+  TASKS.forEach(t => taskMap[t.id] = t);
+
+  // Track each person's availability
+  const personBusy = { darin: [], greg: [] };
+
+  function getPersonEarliestStart(person, after) {
+    let candidate = new Date(after);
+    const intervals = personBusy[person].sort((a,b) => a.start - b.start);
+    for (const interval of intervals) {
+      if (candidate >= interval.start && candidate < interval.end) {
+        candidate = new Date(interval.end);
+      }
+    }
+    return candidate;
+  }
+
+  const remaining = new Set(TASKS.map(t => t.id));
+
+  let maxIter = TASKS.length * 2;
+  while (remaining.size > 0 && maxIter-- > 0) {
+    const ready = [];
+    for (const taskId of remaining) {
+      const task = taskMap[taskId];
+      const allDepsScheduled = task.deps.every(d => scheduled[d]);
+      if (allDepsScheduled) {
+        ready.push(task);
+      }
+    }
+
+    if (ready.length === 0) break;
+
+    ready.sort((a, b) => (PRIORITY[a.id] || 99) - (PRIORITY[b.id] || 99));
+
+    const scheduledThisRound = new Set();
+
+    for (const task of ready) {
+      if (scheduledThisRound.has(task.id)) continue;
+
+      let depEnd = new Date(useStart);
+      for (const depId of task.deps) {
+        if (scheduled[depId] && scheduled[depId].end > depEnd) {
+          depEnd = new Date(scheduled[depId].end);
+        }
+      }
+
+      const dur = getDuration(task, view);
+      const isPassive = PASSIVE_TASKS.has(task.id);
+
+      if (isPassive) {
+        const start = new Date(depEnd);
+        const end = new Date(start);
+        end.setDate(end.getDate() + dur);
+        scheduled[task.id] = { start, end, duration: dur, task };
+        remaining.delete(task.id);
+        scheduledThisRound.add(task.id);
+      } else {
+        const personStart = getPersonEarliestStart(task.person, depEnd);
+        const start = new Date(personStart);
+        const end = new Date(start);
+        end.setDate(end.getDate() + dur);
+
+        scheduled[task.id] = { start, end, duration: dur, task };
+        personBusy[task.person].push({ start: new Date(start), end: new Date(end) });
+        remaining.delete(task.id);
+        scheduledThisRound.add(task.id);
+      }
+    }
+  }
+
+  return scheduled;
+}
+
+// ============================
+// RENDERING
+// ============================
+let currentView = 'aggressive';
+let scheduledData = {};
+
+function totalDays(start, end) {
+  return Math.round((end - start) / (1000*60*60*24));
+}
+
+function formatDate(d) {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+}
+
+function formatDateLong(d) {
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  return months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+}
+
+function formatCost(n) {
+  return '$' + n.toLocaleString();
+}
+
+function getProjectRange(scheduled) {
+  let minDate = new Date(2030, 0, 1);
+  let maxDate = new Date(2020, 0, 1);
+  Object.values(scheduled).forEach(s => {
+    if (s.start < minDate) minDate = new Date(s.start);
+    if (s.end > maxDate) maxDate = new Date(s.end);
+  });
+  // Start at beginning of project start month
+  const chartStart = new Date(projectStartDate);
+  chartStart.setDate(1);
+  // End: always extend at least through Jan 2027 so Christmas line is visible
+  let chartEnd = new Date(maxDate);
+  chartEnd.setMonth(chartEnd.getMonth() + 1);
+  chartEnd.setDate(1);
+  const minEnd = new Date(2027, 1, 1); // Feb 1, 2027
+  if (chartEnd < minEnd) chartEnd = minEnd;
+  return { start: chartStart, end: chartEnd };
+}
+
+function getMonths(rangeStart, rangeEnd) {
+  const months = [];
+  let d = new Date(rangeStart);
+  while (d < rangeEnd) {
+    const monthStart = new Date(d);
+    const next = new Date(d);
+    next.setMonth(next.getMonth() + 1);
+    months.push({ start: monthStart, end: next, label: monthStart.toLocaleString('default',{month:'short'}) + ' ' + monthStart.getFullYear() });
+    d = next;
+  }
+  return months;
+}
+
+function dayToX(date, range, totalWidth) {
+  const totalDaysRange = totalDays(range.start, range.end);
+  const dayOffset = totalDays(range.start, date);
+  return (dayOffset / totalDaysRange) * totalWidth;
+}
+
+function buildOrderedTasks() {
+  const ordered = [];
+  CATEGORIES.forEach(cat => {
+    ordered.push({ type: 'category', cat });
+    TASKS.filter(t => t.cat === cat.id).forEach(t => {
+      ordered.push({ type: 'task', task: t });
+    });
+  });
+  return ordered;
+}
+
+// ============================
+// PROJECTED FINISH DATE DISPLAY
+// ============================
+function renderProjectedFinish(scheduled) {
+  const display = document.getElementById('projectedFinishDisplay');
+  const text = document.getElementById('projectedFinishText');
+
+  // Get project end date excluding past-christmas tasks
+  let projectEndXmas = new Date(2020, 0, 1);
+  Object.values(scheduled).forEach(s => {
+    if (!s.task.pastChristmas && s.end > projectEndXmas) projectEndXmas = new Date(s.end);
+  });
+
+  const daysToChristmas = totalDays(projectEndXmas, CHRISTMAS);
+
+  if (daysToChristmas >= 0) {
+    display.className = 'projected-finish-display on-time';
+    display.querySelector('.finish-icon').innerHTML = '&#9989;';
+    text.innerHTML = 'Projected Finish: <strong>' + formatDateLong(projectEndXmas) + '</strong> (' + daysToChristmas + ' days before Christmas)';
+  } else {
+    display.className = 'projected-finish-display over-time';
+    display.querySelector('.finish-icon').innerHTML = '&#9888;&#65039;';
+    text.innerHTML = 'Projected Finish: <strong>' + formatDateLong(projectEndXmas) + '</strong> (' + Math.abs(daysToChristmas) + ' days AFTER Christmas)';
+  }
+}
+
+// ============================
+// LATEST START CALCULATOR
+// ============================
+function calculateLatestStartForChristmas() {
+  const container = document.getElementById('latestStartCards');
+  const views = [
+    { key: 'aggressive', label: 'Aggressive', badgeClass: 'aggressive' },
+    { key: 'moderate', label: 'Moderate', badgeClass: 'moderate' },
+    { key: 'relaxed', label: 'Relaxed', badgeClass: 'relaxed' },
+  ];
+
+  let html = '';
+
+  views.forEach(v => {
+    // Binary search for the latest start date that finishes by Christmas
+    // We search by scheduling the project with different start dates.
+    // Start from today, and find the latest date where project ends <= Dec 25.
+
+    // First, figure out how many days the project takes from a given start date
+    // by scheduling with a reference start date and measuring the span.
+    const refStart = new Date(2026, 0, 1); // Jan 1 reference
+    const refScheduled = scheduleAllTasks(v.key, refStart);
+
+    // Get the project end (excl. pastChristmas tasks)
+    let refEnd = new Date(2020, 0, 1);
+    Object.values(refScheduled).forEach(s => {
+      if (!s.task.pastChristmas && s.end > refEnd) refEnd = new Date(s.end);
+    });
+
+    const projectDuration = totalDays(refStart, refEnd);
+
+    // Latest start = Christmas - projectDuration
+    const latestStart = new Date(CHRISTMAS);
+    latestStart.setDate(latestStart.getDate() - projectDuration);
+
+    // Verify by actually scheduling from that date
+    const verifyScheduled = scheduleAllTasks(v.key, latestStart);
+    let verifyEnd = new Date(2020, 0, 1);
+    Object.values(verifyScheduled).forEach(s => {
+      if (!s.task.pastChristmas && s.end > verifyEnd) verifyEnd = new Date(s.end);
+    });
+
+    // If verification shows it goes over, subtract extra days
+    const overshoot = totalDays(CHRISTMAS, verifyEnd);
+    if (overshoot > 0) {
+      latestStart.setDate(latestStart.getDate() - overshoot);
+    }
+
+    const isPast = latestStart < TODAY;
+    const feasible = !isPast;
+    const cardClass = feasible ? 'feasible' : 'infeasible';
+
+    let noteText;
+    if (feasible) {
+      const daysFromNow = totalDays(TODAY, latestStart);
+      noteText = daysFromNow + ' days from today — finish by Dec 25';
+    } else {
+      const daysPast = totalDays(latestStart, TODAY);
+      noteText = 'Needed to start ' + daysPast + ' days ago — CANNOT finish by Christmas';
+    }
+
+    // Project duration in weeks
+    const durationWeeks = Math.ceil(projectDuration / 7);
+
+    html += `
+      <div class="latest-start-card ${cardClass}">
+        <div class="ls-indicator"></div>
+        <span class="ls-view-badge ${v.badgeClass}">${v.label}</span>
+        <div style="flex:1">
+          <div class="ls-label">Start by</div>
+          <div class="ls-date">${formatDate(latestStart)}</div>
+          <div class="ls-note">${noteText} (${durationWeeks} week build)</div>
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+function renderStats(scheduled) {
+  const panel = document.getElementById('statsPanel');
+
+  // Total project duration
+  let projectEnd = new Date(2020, 0, 1);
+  let projectEndXmas = new Date(2020, 0, 1);
+  Object.values(scheduled).forEach(s => {
+    if (s.end > projectEnd) projectEnd = new Date(s.end);
+    if (!s.task.pastChristmas && s.end > projectEndXmas) projectEndXmas = new Date(s.end);
+  });
+  const totalDuration = totalDays(projectStartDate, projectEnd);
+  const totalWeeks = Math.ceil(totalDuration / 7);
+
+  // Darin's weeks
+  let darinDays = 0;
+  Object.values(scheduled).forEach(s => { if (s.task.person === 'darin') darinDays += s.duration; });
+  const darinWeeks = Math.ceil(darinDays / 7);
+
+  // Greg's weeks
+  let gregDays = 0;
+  Object.values(scheduled).forEach(s => { if (s.task.person === 'greg') gregDays += s.duration; });
+  const gregWeeks = Math.ceil(gregDays / 7);
+
+  // Buffer
+  const bufferDays = totalDays(projectEndXmas, CHRISTMAS);
+
+  // Total costs
+  let darinCost = 0, gregCost = 0;
+  TASKS.forEach(t => {
+    if (t.person === 'darin') darinCost += t.cost;
+    else gregCost += t.cost;
+  });
+
+  // Critical path items count
+  const criticalCount = TASKS.filter(t => t.critical).length;
+
+  panel.innerHTML = `
+    <div class="stat-card">
+      <div class="stat-label">Total Project Duration</div>
+      <div class="stat-value">${totalWeeks} weeks</div>
+      <div class="stat-detail">${formatDate(projectStartDate)} &mdash; ${formatDate(projectEnd)}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Darin's Active Time</div>
+      <div class="stat-value darin-stat">${darinWeeks} weeks</div>
+      <div class="stat-detail">${darinDays} working days</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Greg's Active Time</div>
+      <div class="stat-value greg-stat">${gregWeeks} weeks</div>
+      <div class="stat-detail">${gregDays} working days</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Buffer Before Christmas</div>
+      <div class="stat-value ${bufferDays >= 0 ? 'buffer-positive' : 'buffer-negative'}">${bufferDays >= 0 ? bufferDays + ' days' : Math.abs(bufferDays) + ' days over'}</div>
+      <div class="stat-detail">${bufferDays >= 0 ? 'Ahead of deadline' : 'Past Christmas (excl. master bath)'}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Critical Path Items</div>
+      <div class="stat-value" style="color:var(--critical)">${criticalCount}</div>
+      <div class="stat-detail">Tasks that determine finish date</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Project Cost</div>
+      <div class="stat-value total-cost">${formatCost(darinCost + gregCost)}</div>
+      <div class="stat-detail">Darin: ${formatCost(darinCost)} &middot; Greg: ${formatCost(gregCost)}</div>
+    </div>
+  `;
+}
+
+function renderGantt(scheduled) {
+  const range = getProjectRange(scheduled);
+  const months = getMonths(range.start, range.end);
+  const orderedItems = buildOrderedTasks();
+  const chartWidth = Math.max(1400, months.length * 140);
+
+  // Labels
+  const labelsEl = document.getElementById('ganttLabels');
+  let labelsHTML = '<div class="gantt-label-header">Task</div>';
+  orderedItems.forEach(item => {
+    if (item.type === 'category') {
+      labelsHTML += `<div class="gantt-category-row" style="background:${item.cat.color}">${item.cat.label}</div>`;
+    } else {
+      const t = item.task;
+      const color = t.person === 'darin' ? 'var(--darin-color)' : 'var(--greg-color)';
+      labelsHTML += `<div class="gantt-label-row">
+        <div class="person-badge" style="background:${color}"></div>
+        <div class="task-name" title="${t.name}">${t.name}</div>
+      </div>`;
+    }
+  });
+  labelsEl.innerHTML = labelsHTML;
+
+  // Chart header (months)
+  const headerEl = document.getElementById('ganttHeader');
+  let headerHTML = '';
+  months.forEach(m => {
+    const w = dayToX(m.end, range, chartWidth) - dayToX(m.start, range, chartWidth);
+    headerHTML += `<div class="gantt-month" style="width:${w}px">${m.label}</div>`;
+  });
+  headerEl.innerHTML = headerHTML;
+  headerEl.style.width = chartWidth + 'px';
+
+  // Set container min-width to labels + chart
+  const container = document.getElementById('ganttContainer');
+  container.style.minWidth = (280 + chartWidth) + 'px';
+
+  // Chart area width
+  const chartEl = document.getElementById('ganttChart');
+  chartEl.style.width = chartWidth + 'px';
+  chartEl.style.minWidth = chartWidth + 'px';
+
+  // Chart body
+  const bodyEl = document.getElementById('ganttBody');
+  bodyEl.style.width = chartWidth + 'px';
+  let bodyHTML = '';
+
+  // Grid lines (month boundaries)
+  months.forEach(m => {
+    const x = dayToX(m.start, range, chartWidth);
+    bodyHTML += `<div class="gantt-gridline month-line" style="left:${x}px"></div>`;
+  });
+
+  // Milestone lines
+  const xmasX = dayToX(CHRISTMAS, range, chartWidth);
+  bodyHTML += `<div class="milestone-line christmas" style="left:${xmasX}px">
+    <div class="milestone-label christmas" style="top:4px; left:0; transform:none; font-size:10px; writing-mode:horizontal-tb;">Christmas</div>
+  </div>`;
+
+  if (TODAY >= range.start && TODAY <= range.end) {
+    const todayX = dayToX(TODAY, range, chartWidth);
+    bodyHTML += `<div class="milestone-line today" style="left:${todayX}px">
+      <div class="milestone-label today" style="top:4px; left:0; transform:none; font-size:10px;">Today</div>
+    </div>`;
+  }
+
+  // Rows and bars
+  let rowIndex = 0;
+  orderedItems.forEach(item => {
+    if (item.type === 'category') {
+      bodyHTML += `<div class="gantt-category-spacer"></div>`;
+    } else {
+      const t = item.task;
+      const s = scheduled[t.id];
+      const barLeft = dayToX(s.start, range, chartWidth);
+      const barRight = dayToX(s.end, range, chartWidth);
+      const barWidth = Math.max(4, barRight - barLeft);
+      const barClass = t.pastChristmas ? 'past-christmas' : t.person;
+      const critBadge = t.critical ? ' CP' : '';
+
+      bodyHTML += `<div class="gantt-row" data-task-id="${t.id}">
+        <div class="gantt-bar ${barClass}"
+             style="left:${barLeft}px; width:${barWidth}px;"
+             data-task-id="${t.id}"
+             onmouseenter="showTooltip(event,'${t.id}')"
+             onmousemove="moveTooltip(event)"
+             onmouseleave="hideTooltip()">
+          <div class="bar-label">${barWidth > 60 ? t.name.substring(0, Math.floor(barWidth/6)) : ''}</div>
+        </div>
+      </div>`;
+      rowIndex++;
+    }
+  });
+
+  bodyEl.innerHTML = bodyHTML;
+
+  // Draw dependency lines as SVG overlay
+  drawDependencies(scheduled, range, chartWidth, orderedItems);
+}
+
+function drawDependencies(scheduled, range, chartWidth, orderedItems) {
+  const old = document.getElementById('depSvg');
+  if (old) old.remove();
+
+  const bodyEl = document.getElementById('ganttBody');
+  const totalHeight = bodyEl.offsetHeight;
+
+  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.id = 'depSvg';
+  svg.style.position = 'absolute';
+  svg.style.top = '0';
+  svg.style.left = '0';
+  svg.style.width = chartWidth + 'px';
+  svg.style.height = totalHeight + 'px';
+  svg.style.pointerEvents = 'none';
+  svg.style.zIndex = '3';
+
+  const rowPositions = {};
+  let yPos = 0;
+  orderedItems.forEach(item => {
+    if (item.type === 'category') {
+      yPos += 28;
+    } else {
+      rowPositions[item.task.id] = yPos + 17;
+      yPos += 34;
+    }
+  });
+
+  const criticalTasks = TASKS.filter(t => t.critical);
+  const criticalIds = new Set(criticalTasks.map(t => t.id));
+
+  TASKS.forEach(task => {
+    task.deps.forEach(depId => {
+      const fromScheduled = scheduled[depId];
+      const toScheduled = scheduled[task.id];
+      if (!fromScheduled || !toScheduled) return;
+      if (!rowPositions.hasOwnProperty(depId) || !rowPositions.hasOwnProperty(task.id)) return;
+
+      const isCritical = criticalIds.has(task.id) && criticalIds.has(depId);
+
+      const x1 = dayToX(fromScheduled.end, range, chartWidth);
+      const y1 = rowPositions[depId];
+      const x2 = dayToX(toScheduled.start, range, chartWidth);
+      const y2 = rowPositions[task.id];
+
+      const line = document.createElementNS('http://www.w3.org/2000/svg','path');
+      const midX = x1 + (x2 - x1) * 0.5;
+
+      line.setAttribute('d', `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`);
+      line.setAttribute('stroke', isCritical ? '#EF4444' : '#CBD5E1');
+      line.setAttribute('stroke-width', isCritical ? '1.5' : '1');
+      line.setAttribute('fill', 'none');
+      line.setAttribute('stroke-dasharray', isCritical ? 'none' : '4,3');
+      line.setAttribute('opacity', isCritical ? '0.6' : '0.35');
+
+      svg.appendChild(line);
+
+      const arrow = document.createElementNS('http://www.w3.org/2000/svg','polygon');
+      const arrowSize = 4;
+      arrow.setAttribute('points', `${x2},${y2} ${x2-arrowSize*1.5},${y2-arrowSize} ${x2-arrowSize*1.5},${y2+arrowSize}`);
+      arrow.setAttribute('fill', isCritical ? '#EF4444' : '#CBD5E1');
+      arrow.setAttribute('opacity', isCritical ? '0.6' : '0.35');
+      svg.appendChild(arrow);
+    });
+  });
+
+  bodyEl.appendChild(svg);
+}
+
+function renderTable(scheduled) {
+  const tbody = document.getElementById('taskTableBody');
+  let html = '';
+  let taskNum = 0;
+
+  CATEGORIES.forEach(cat => {
+    html += `<tr class="cat-row"><td colspan="10" style="border-left: 4px solid ${cat.color}">${cat.label}</td></tr>`;
+    TASKS.filter(t => t.cat === cat.id).forEach(t => {
+      taskNum++;
+      const s = scheduled[t.id];
+      const depNames = t.deps.map(d => {
+        const dt = TASKS.find(x => x.id === d);
+        return dt ? dt.name : d;
+      }).join(', ') || '\u2014';
+
+      const durationDays = s.duration;
+      const durationWeeks = (durationDays / 7).toFixed(1);
+      const durLabel = durationDays >= 7 ? `${durationWeeks} wks (${durationDays}d)` : `${durationDays} days`;
+
+      const critBadge = t.critical ? '<span class="critical-badge">CRITICAL PATH</span>' : '';
+      const pastBadge = t.pastChristmas ? '<span class="past-xmas-badge">PAST XMAS OK</span>' : '';
+
+      html += `<tr>
+        <td>${taskNum}</td>
+        <td><strong>${t.name}</strong> ${critBadge}${pastBadge}</td>
+        <td><span class="person-pill ${t.person}">${t.person === 'darin' ? 'Darin' : 'Greg'}</span></td>
+        <td style="font-size:11px; color:#64748B">${cat.label}</td>
+        <td>${durLabel}</td>
+        <td>${formatDate(s.start)}</td>
+        <td>${formatDate(s.end)}</td>
+        <td style="font-size:11px; max-width:180px; white-space:normal">${depNames}</td>
+        <td class="cost-cell" style="text-align:right">${formatCost(t.cost)}</td>
+        <td style="font-size:11px; color:#64748B; max-width:160px; white-space:normal">${t.note || ''}</td>
+      </tr>`;
+    });
+  });
+
+  tbody.innerHTML = html;
+}
+
+function renderCostSummary() {
+  const el = document.getElementById('costSummary');
+  let darinCost = 0, gregCost = 0;
+  TASKS.forEach(t => {
+    if (t.person === 'darin') darinCost += t.cost;
+    else gregCost += t.cost;
+  });
+  el.innerHTML = `
+    <div class="cost-card">
+      <div class="cost-label">Darin's Scope (Contractor)</div>
+      <div class="cost-value darin-cost">${formatCost(darinCost)}</div>
+    </div>
+    <div class="cost-card">
+      <div class="cost-label">Greg's Scope (DIY / Materials)</div>
+      <div class="cost-value greg-cost">${formatCost(gregCost)}</div>
+    </div>
+    <div class="cost-card">
+      <div class="cost-label">Total Project Budget</div>
+      <div class="cost-value total-cost-val">${formatCost(darinCost + gregCost)}</div>
+    </div>
+  `;
+}
+
+// ============================
+// TOOLTIP
+// ============================
+function showTooltip(e, taskId) {
+  const t = TASKS.find(x => x.id === taskId);
+  const s = scheduledData[taskId];
+  if (!t || !s) return;
+
+  const tooltip = document.getElementById('tooltip');
+  const durDays = s.duration;
+  const durWeeks = (durDays / 7).toFixed(1);
+
+  tooltip.innerHTML = `
+    <div class="tt-title">${t.name}</div>
+    <div class="tt-row"><span class="tt-label">Assigned to</span><span class="tt-value ${t.person}">${t.person === 'darin' ? 'Darin (Contractor)' : 'Greg (DIY)'}</span></div>
+    <div class="tt-row"><span class="tt-label">Start</span><span class="tt-value">${formatDate(s.start)}</span></div>
+    <div class="tt-row"><span class="tt-label">End</span><span class="tt-value">${formatDate(s.end)}</span></div>
+    <div class="tt-row"><span class="tt-label">Duration</span><span class="tt-value">${durDays >= 7 ? durWeeks + ' weeks' : durDays + ' days'}</span></div>
+    <div class="tt-row"><span class="tt-label">Cost</span><span class="tt-value">${formatCost(t.cost)}</span></div>
+    ${t.critical ? '<div class="tt-row"><span class="tt-label">Status</span><span class="tt-value" style="color:#EF4444">CRITICAL PATH</span></div>' : ''}
+    ${t.pastChristmas ? '<div class="tt-row"><span class="tt-label">Note</span><span class="tt-value" style="color:#A855F7">Can extend past Christmas</span></div>' : ''}
+    ${t.note ? '<div class="tt-row" style="margin-top:6px;border-top:1px solid rgba(255,255,255,0.1);padding-top:6px"><span style="color:#94A3B8;font-size:11px">' + t.note + '</span></div>' : ''}
+  `;
+  tooltip.style.display = 'block';
+  moveTooltip(e);
+}
+
+function moveTooltip(e) {
+  const tooltip = document.getElementById('tooltip');
+  let x = e.clientX + 16;
+  let y = e.clientY + 16;
+  const rect = tooltip.getBoundingClientRect();
+  if (x + 320 > window.innerWidth) x = e.clientX - 330;
+  if (y + rect.height > window.innerHeight) y = e.clientY - rect.height - 16;
+  tooltip.style.left = x + 'px';
+  tooltip.style.top = y + 'px';
+}
+
+function hideTooltip() {
+  document.getElementById('tooltip').style.display = 'none';
+}
+
+// ============================
+// START DATE CHANGE HANDLER
+// ============================
+function onStartDateChange(value) {
+  if (!value) return;
+  const parts = value.split('-');
+  const year = parseInt(parts[0]);
+  const month = parseInt(parts[1]) - 1;
+  const day = parseInt(parts[2]);
+  projectStartDate = new Date(year, month, day);
+  refreshAll();
+}
+
+// ============================
+// VIEW SWITCHING
+// ============================
+function setView(view) {
+  currentView = view;
+  document.querySelectorAll('.view-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.view === view);
+  });
+  refreshAll();
+}
+
+function refreshAll() {
+  scheduledData = scheduleAllTasks(currentView, projectStartDate);
+  renderStats(scheduledData);
+  renderGantt(scheduledData);
+  renderTable(scheduledData);
+  renderProjectedFinish(scheduledData);
+  calculateLatestStartForChristmas();
+}
+
+// ============================
+// INIT
+// ============================
+document.getElementById('genDate').textContent = formatDate(new Date());
+renderCostSummary();
+currentView = 'moderate';
+document.querySelectorAll('.view-btn').forEach(b => {
+  b.classList.toggle('active', b.dataset.view === 'moderate');
+});
+refreshAll();
+
+</script>
+</body>
+</html>
